@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_NoticeDAO">
+	<select id="noticeSelectList" resultType="com.human.VO.NoticeVO">
+		select * from notice n
+		full outer join campsite c on n.c_num = c.num 
+		where c.num=0 
+		order by n.num asc
+	</select>
+
+	<insert id="noticeInsertOne" parameterType="com.human.VO.NoticeVO">
+		insert into notice values(notice_seq.nextval,#{c_num},#{title},#{n_con},default,default)
+	</insert>
+
+	<update id="noticeCntUpdate" parameterType="int">
+		update notice set view_cnt =view_cnt+1 where num=#{num}
+	</update>
+
+	<select id="noticeSelectOne" parameterType="int" resultType="com.human.VO.NoticeVO">
+		select * from notice n where n.num=#{num} 
+	</select>
+	
+	<update id="noticeUpdate" parameterType="com.human.VO.NoticeVO">
+		update notice set title=#{title}, n_con=#{n_con} where num=#{num}
+	</update>
+	
+	<delete id="noticeDeleteOne" parameterType="int">
+		delete from notice where num=#{num}
+	</delete>
+	
+	<select id="campNoticeSelect" parameterType="int" resultType="com.human.VO.NoticeVO">
+		select * from notice where c_num=#{c_num} 
+	</select>
+	
+	<update id="camp_notice_mod" parameterType="com.human.VO.NoticeVO">
+		update notice set n_con = #{n_con} where c_num=#{c_num}
+	</update>
+
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:beans="http://www.springframework.org/schema/beans"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:mvc="http://www.springframework.org/schema/mvc"
+   xsi:schemaLocation="http://www.springframework.org/schema/mvc 
+                  https://www.springframework.org/schema/mvc/spring-mvc.xsd
+                  http://www.springframework.org/schema/beans 
+                  https://www.springframework.org/schema/beans/spring-beans.xsd
+                  http://www.springframework.org/schema/context 
+                  https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	 
+	 <!-- 파일업로드 설정.. 스프링에서 파일 업로드 기능을사용하기 위해서 bean(객체) 설정 -->
+	 <beans:bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+	 id="multipartResolver">
+	 	<beans:property name="maxUploadSize" value = "10448760"></beans:property> <!-- 10메가 용량제한 설정 -->
+	 </beans:bean>
+	 
+	 <beans:bean class="java.lang.String" id="uploadPath">
+	 	<beans:constructor-arg value="/tmp"></beans:constructor-arg>
+	 </beans:bean>
+	 
+	 <beans:bean id="authenInterceptor" class="com.human.interceptor.AuthenticationInterceptor">
+	 </beans:bean>
+	 
+   <mvc:interceptors>
+       <!-- 세션이 있는지 검사하는 인터셉터 -->
+      <mvc:interceptor>
+         <!-- 세션에 있어야 되는 페이지 -->
+         <mvc:mapping path="/**"/>  <!-- 모든 URL은 인터셉터 대상입니다. -->
+         <!-- 세션 검사를 하지 않는 페이지 -->
+         <!-- exclude-mapping 는 spring 3.2 이상에서 사용 가능하므로 spring-mvc-4.3.xsd 를 수정해 주어야 합니다. -->
+         <mvc:exclude-mapping path="/"/>                <!-- exclude-mapping : 지정된 URL은 제외입니다. -->
+         <mvc:exclude-mapping path="/resources/**"/>  	
+         <mvc:exclude-mapping path="/login**"/>  		
+         <mvc:exclude-mapping path="/logout**"/>
+         <mvc:exclude-mapping path="/join**"/>
+         <mvc:exclude-mapping path="/board_list**"/>	
+         <mvc:exclude-mapping path="/idCheck**"/>	
+         <mvc:exclude-mapping path="/sendmail**"/>
+         <mvc:exclude-mapping path="/find_id_form**"/>
+         <mvc:exclude-mapping path="/find_id**"/>
+         <mvc:exclude-mapping path="/id_mailChk**"/>
+         <mvc:exclude-mapping path="/find_pw_form**"/>
+         <mvc:exclude-mapping path="/find_pw**"/>
+         <mvc:exclude-mapping path="/pw_mailChk**"/>
+         <mvc:exclude-mapping path="/camp_list**"/>
+         <mvc:exclude-mapping path="/camp_search**"/>
+         <mvc:exclude-mapping path="/campSearch**"/>
+         <mvc:exclude-mapping path="/notice_list**"/>
+         <mvc:exclude-mapping path="/download**"/>
+         <mvc:exclude-mapping path="/about_Us**"/>
+         <beans:ref bean="authenInterceptor" />    <!-- 매핑에 포함된 URL의 pre와 post를 정의한 객체 -->
+      </mvc:interceptor>
+   </mvc:interceptors>   
+	
+	<context:component-scan base-package="com.human.camp_hub" />
+	<context:component-scan base-package="com.human.util" />
+	
+</beans:beans>

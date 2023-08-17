@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_FiledataDAO">
+
+	<select id="fileList" resultType="com.human.VO.FiledataVO">
+		SELECT filedata.*
+		FROM filedata
+		JOIN (
+		SELECT MIN(num) AS min_num
+		FROM filedata
+		WHERE c_num IS NOT NULL
+		GROUP BY c_num
+		) min_nums
+		ON filedata.num = min_nums.min_num order by c_num desc
+	</select>
+
+	<insert id="fileInsert" parameterType="hashmap">
+		insert into filedata values(filedata_seq.nextval,
+
+		<choose>
+			<when test="b_num !=null and b_num !=''">#{b_num},</when>
+			<when test="b_num ==null or  b_num ==''">null,</when>
+		</choose>
+		<choose>
+			<when test="c_num !=null and c_num !=''">#{c_num},</when>
+			<when test="c_num ==null or  c_num ==''">null,</when>
+		</choose>
+		<choose>
+			<when test="r_num !=null and r_num !=''">#{r_num},</when>
+			<when test="r_num ==null or  r_num ==''">null,</when>
+		</choose>
+
+		#{filename})
+	</insert>
+
+	<select id="fileSelectList" parameterType="hashmap"
+		resultType="com.human.VO.FiledataVO">
+		select num,filename from filedata where
+		<if test="b_num !=null and b_num!=''"> b_num=#{b_num}</if>
+		<if test="c_num !=null and c_num!=''"> c_num=#{c_num}</if>
+		<if test="r_num !=null and r_num!=''"> r_num=#{r_num}</if>
+	</select>
+
+	<delete id="filedataDelete" parameterType="int">
+		delete from filedata
+		where num=#{num}
+	</delete>
+	
+	<select id="campFileList" parameterType="int" resultType="com.human.VO.FiledataVO">
+		select num, filename from filedata where c_num=#{c_num} and r_num is null
+	</select>
+	
+	<delete id="camp_file_mod" parameterType="int">
+		delete from filedata where c_num = #{c_num} and r_num is null
+	</delete>
+	
+	<delete id="camp_roomfile_mod" parameterType="int">
+		delete from filedata where c_num = #{c_num} and r_num is not null
+	</delete>
+</mapper>

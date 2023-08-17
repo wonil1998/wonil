@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_CampDAO">
+
+	<update id="campsiteStar" parameterType="int">
+		update campsite
+		set star = round((select sum(star_r) from camp_review where c_num
+		=#{c_num})/
+		(select count(*) from camp_review where c_num=#{c_num}),2)
+		where num=#{c_num}
+	</update>
+
+	<select id="mycampList" parameterType="String"
+		resultType="com.human.VO.CampVO">
+		select * from campsite where m_id = #{id} and num>0
+	</select>
+
+	<select id="campSearchByType" parameterType="hashmap"
+		resultType="com.human.VO.CampVO">
+		SELECT c.*
+		FROM campsite c
+		INNER JOIN camp_type t ON c.num = t.c_num
+		WHERE t.c_type IN
+		<foreach collection="cTypes" item="type" open="("
+			separator="," close=")">
+			#{type}
+		</foreach>
+		 and c.num>0
+	</select>
+
+	<select id="camp_site_seq" resultType="int">
+		select
+		campsite_seq.nextval from dual
+	</select>
+	<insert id="camp_site_save" parameterType="com.human.VO.CampVO">
+		insert into campsite
+		values(#{num},#{m_id},#{c_name},#{addr_do},#{addr_si},#{phone},default,#{c_price},#{addr_detail})
+	</insert>
+
+
+	<select id="campSelectOne" parameterType="int"
+		resultType="com.human.VO.CampVO">
+		select * from campsite where num = #{num}  and num>0
+	</select>
+	<select id="campSelectList" resultType="com.human.VO.CampVO">
+		select * from campsite where num>0
+		order by num desc
+	</select>
+
+	<select id="campSearchList" parameterType="hashmap"
+		resultType="com.human.VO.CampVO">
+
+		<choose>
+			<when test="c_name == null">
+				select * from campsite where num>0 and addr_do Like '%' ||
+				#{addr_do} || '%' AND
+				addr_si LIKE '%' || #{addr_si} || '%'
+			</when>
+			<when test="c_name != null">
+				select * from campsite where num>0 and c_name Like '%' ||
+				#{c_name} || '%'
+			</when>
+		</choose>
+
+	</select>
+	
+	<update id="camp_mod" parameterType="com.human.VO.CampVO">
+		update campsite 
+		set c_name=#{c_name},
+		addr_do=#{addr_do},
+		addr_si=#{addr_si},
+		phone=#{phone},
+		c_price=#{c_price},
+		addr_detail=#{addr_detail}
+		where num=#{num}
+	</update>
+	<delete id="camp_del" parameterType="int">
+		delete from campsite where num=#{num}
+	</delete>
+
+</mapper>

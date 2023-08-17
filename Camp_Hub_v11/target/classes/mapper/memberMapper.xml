@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_MemberDAO">
+
+
+	<update id="lovePlus" parameterType="String">
+		update member set
+		point=point+1 where nick_name=#{nick_name}
+	</update>
+
+	<update id="boardWritePoint" parameterType="String">
+		update member set
+		point=point+10 where nick_name=#{nick_name}
+	</update>
+
+	<update id="reviewWritePoint" parameterType="String">
+		update member set
+		point=point+5 where nick_name=#{nick_name}
+	</update>
+
+	<update id="replyWritePoint" parameterType="String">
+		update member set
+		point=point+5 where nick_name=#{nick_name}
+	</update>
+
+	<select id="memberSelectOne" parameterType="String"
+		resultType="com.human.VO.MemberVO">
+		select id,mname,nick_name,point,grade,indate from member
+		where id=#{id}
+	</select>
+
+	<insert id="memberInsert" parameterType="com.human.VO.MemberVO">
+		insert into member
+		values(#{id},#{pw},#{mname},#{email},#{nick_name},default,default,default)
+	</insert>
+
+	<select id="idCheck" parameterType="String" resultType="int">
+		select
+		count(*) from member where id = #{id}
+	</select>
+
+	<select id="memberPwCheck" parameterType="hashmap"
+		resultType="int">
+		select count(*) from member where id=#{id} and pw=#{pw}
+	</select>
+
+	<select id="loginChk" parameterType="com.human.VO.MemberVO"
+		resultType="com.human.VO.MemberVO">
+		select * from member where
+		<choose>
+			<when test="pw ==null">
+				id=#{id}
+			</when>
+			<when test="pw != null">
+				id=#{id} and pw=#{pw}
+			</when>
+		</choose>
+	</select>
+
+	<update id="memberUpdate_nick_name" parameterType="hashmap">
+		update member
+		set nick_name = #{nick_name} where id = #{id}
+	</update>
+	<update id="memberUpdate_pw" parameterType="hashmap">
+		update member set pw
+		= #{pw} where id = #{id}
+	</update>
+
+	<select id="id_emailCheck" parameterType="hashmap"
+		resultType="int">
+		select count(*) from member where mname=#{mname} and
+		email=#{email}
+	</select>
+
+	<select id="findId" parameterType="hashmap" resultType="String">
+		select id
+		from member where mname=#{mname} and email=#{email}
+	</select>
+
+	<select id="pw_emailCheck" parameterType="hashmap"
+		resultType="int">
+		select count(*) from member where id=#{id} and
+		email=#{email}
+	</select>
+
+	<select id="findPw" parameterType="hashmap" resultType="String">
+		select pw
+		from member where id=#{id} and email=#{email}
+	</select>
+	
+	<delete id="delete_account" parameterType="String">
+		delete from member where id=#{id}
+	</delete>
+</mapper>

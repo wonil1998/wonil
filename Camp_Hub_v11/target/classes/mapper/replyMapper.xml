@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_ReplyDAO">
+	<select id="myreplySelectList" parameterType="String"
+		resultType="com.human.VO.ReplyVO">
+		select r.*,b.title
+		from board_reply r full outer join board b
+		on r.b_num = b.num
+		where r.m_id = #{id}
+		order by r.num desc
+	</select>
+	<select id="replySelectList" parameterType="int"
+		resultType="com.human.VO.ReplyVO">
+		select br.*,m.nick_name, m.grade
+		from board_reply br full outer join member m on br.m_id = m.id
+		where br.b_num=#{b_num}
+		order by br.num asc
+	</select>
+	<insert id="replyInsert" parameterType="com.human.VO.ReplyVO">
+		insert into board_reply
+		values(#{num},#{b_num},#{m_id},#{con},default,default)
+	</insert>
+	<select id="replyInsertReturn" parameterType="int"
+		resultType="com.human.VO.ReplyVO">
+		select br.*,m.nick_name, m.grade from board_reply br full
+		outer join member m on br.m_id = m.id where br.num=#{num}
+	</select>
+
+	<select id="replySelectSeq" resultType="int">
+		select reply_seq.nextval
+		from dual
+	</select>
+
+	<update id="reply_love" parameterType="int">
+		update board_reply set
+		love=love+1 where num=#{num}
+	</update>
+	<select id="reply_loveReturn" parameterType="int"
+		resultType="int">
+		select love from board_reply where num=#{num}
+	</select>
+
+	<!-- 비동기 댓글수정 및 반환 -->
+	<update id="reply_mod" parameterType="com.human.VO.ReplyVO">
+		update board_reply set con
+		= #{con} where num = #{num}
+	</update>
+	<select id="reply_modReturn" parameterType="int"
+		resultType="String">
+		select con from board_reply where num = #{num}
+	</select>
+	<!-- 비동기 댓글 삭제 및 반환 -->
+	<delete id="reply_del" parameterType="int">
+		delete from board_reply
+		where num=#{num}
+	</delete>
+</mapper>

@@ -1,0 +1,190 @@
+drop table filedata;
+drop table marking;
+drop table room;
+drop table camp_type_name;
+drop table camp_type;
+drop table notice;
+drop table camp_review;
+drop table campsite;
+drop table board_reply;
+drop table board;
+drop table member;
+
+
+drop sequence board_seq;
+drop sequence reply_seq;
+drop sequence campsite_seq;
+drop sequence notice_seq;
+drop sequence camptype_seq;
+drop sequence room_seq;
+drop sequence filedata_seq;
+drop sequence marking_seq;
+drop sequence review_seq;
+
+CREATE TABLE member (
+    id VARCHAR2(40) PRIMARY KEY,
+    pw VARCHAR2(20) NOT NULL,
+    mname VARCHAR2(10) NOT NULL,
+    email varchar2(40) not null unique,
+    nick_name VARCHAR2(40) NOT NULL unique,
+    point NUMBER DEFAULT 0 not null,
+    grade VARCHAR2(10) DEFAULT 'bronze' NOT NULL CHECK (grade IN ('bronze', 'silver', 'gold', 'diamond','owner','admin')),
+    indate DATE DEFAULT SYSDATE not null
+);
+
+create table board(
+num number primary key,
+m_id varchar2(40) not null,
+title varchar2(40) not null,
+con varchar2(500) not null,
+view_cnt number default 0 not null,
+love number default 0 not null,
+indate timestamp default sysdate not null,
+b_type varchar2(10) not null, check( b_type in('free','qna')),
+constraint fk_board_mid foreign key(m_id) references member(id) on delete cascade 
+);
+
+create table board_reply(
+num number primary key,
+b_num number not null,
+m_id varchar2(40) not null,
+con varchar2(500) not null,
+love number default 0 not null,
+indate timestamp default sysdate not null,
+constraint fk_board_reply_bnum foreign key(b_num) references board(num) on delete cascade,
+constraint fk_board_reply_id foreign key(m_id) references member(id) on delete cascade); 
+
+
+create table campsite(
+num number primary key,
+m_id varchar2(40) not null,
+constraint fk_campsite_mid foreign key(m_id) references member(id) on delete cascade,
+c_name varchar2(40) not null,
+addr_do varchar2(20) not null,
+addr_si varchar2(40) not null, 
+phone varchar2(13) not null,
+star number(3,2) default 0 not null,
+c_price number default 0 not null,
+addr_detail varchar2(40) );
+
+
+
+create table notice(
+num number primary key,
+c_num number not null,
+constraint fk_notice_cnum foreign key(c_num) references campsite(num) on delete cascade,
+title varchar2(40) not null,
+n_con varchar2(500) not null,
+view_cnt number default 0 not null,
+indate timestamp default sysdate not null);
+
+create table camp_type(
+num number primary KEY,
+c_num number,
+foreign key(c_num)REFERENCES campsite(num) on delete cascade,
+c_type varchar2(20),
+c_group varchar2(20)
+);
+
+create table camp_type_name(
+c_type varchar2(20) primary KEY,
+name varchar2(20),
+c_group varchar2(20)
+);
+
+insert into camp_type_name values('auto','오토','타입' );
+insert into camp_type_name values('caravan','카라반','타입');
+insert into camp_type_name values('pension','팬션','타입');
+insert into camp_type_name values('pet','애완동물','타입');
+
+insert into camp_type_name values('wc','화장실','기본 시설');
+insert into camp_type_name values('shower','샤워장','기본 시설');
+insert into camp_type_name values('elec','전기','기본 시설');
+insert into camp_type_name values('store','매점','기본 시설');
+insert into camp_type_name values('wifi','와이파이','기본 시설');
+insert into camp_type_name values('bbq','바베큐장','기본 시설');
+insert into camp_type_name values('elec_car','전기차 충전','기본 시설');
+
+insert into camp_type_name values('play','놀이터','부가 시설');
+insert into camp_type_name values('pool','수영장','부가 시설');
+insert into camp_type_name values('track','산책로','부가 시설');
+
+commit;
+
+create table room(
+num number primary key,
+c_num number not null,
+constraint fk_room_cnum foreign key(c_num) references campsite(num) on delete cascade,
+r_name varchar2(40) default 'room' not null,
+max_cnt number default 0 not null,
+basic_cnt number default 0 not null,
+r_price number default 0 not null);
+
+create table filedata(
+num number primary key,
+b_num number,
+c_num number,
+r_num number,
+filename varchar2(45) not null,
+constraint fk_filedate_bnum foreign key(b_num) references board(num) on delete cascade,
+constraint fk_filedate_cnum foreign key(c_num) references campsite(num) on delete cascade,
+constraint fk_filedate_rnum foreign key(r_num) references room(num) on delete cascade);
+
+create table marking(
+num number primary key,
+c_num number not null,
+m_id varchar2(40) not null,
+constraint fk_marking_cnum foreign key(c_num) references campsite(num) on delete cascade,
+constraint fk_marking_mid foreign key(m_id) references member(id) on delete cascade);
+
+
+create table camp_review(
+num number primary key,
+c_num number not null, 
+constraint fk_review_cnum foreign key(c_num) references campsite(num) on delete cascade,
+m_id varchar2(500) not null, 
+constraint fk_marking_id foreign key(m_id) references member(id) on delete cascade,
+rv_con varchar2(500) not null,
+star_r number default 0 check(star_r in(1,2,3,4,5)) not null,
+indate timestamp default sysdate not null);
+
+
+create sequence board_seq;
+create sequence reply_seq;
+create sequence campsite_seq;
+create sequence notice_seq;
+create sequence room_seq;
+create sequence filedata_seq;
+create sequence marking_seq;
+create sequence review_seq;
+create sequence camptype_seq;
+
+
+create or replace trigger member_update
+before update of point on member
+for each row
+begin 
+    if (:new.point >= 50 and :old.grade='silver') then
+        :new.grade :='gold';
+    elsif (:new.point >=200 and :old.grade='gold') then
+        :new.grade :='diamond';
+    end if;
+end;
+/
+
+
+create or replace trigger board_reply_insert
+before insert on board_reply
+for each row
+declare
+    cnt number;
+begin 
+    select count(*) into cnt from board_reply where m_id= :new.m_id;
+    if cnt >=2 then
+        update member set grade='silver' where id= :new.m_id and grade='bronze' ;
+    end if;
+end;
+/
+
+insert into member values('admin','admin','김관리','admin@naver.com','관리자',default,'admin',default);
+insert into campsite values(0,'admin','관리장','경기도','수원시','01000000000',default,default,'관리사무소');

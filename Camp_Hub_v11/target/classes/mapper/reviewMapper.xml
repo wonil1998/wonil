@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.human.dao.IF_ReviewDAO">
+
+	<update id="review_mod" parameterType="com.human.VO.ReviewVO">
+		update camp_review 
+		set rv_con = #{rv_con}, star_r = #{star_r}
+		where num = #{num}
+	</update>
+		
+	<delete id="review_del" parameterType="int">
+		delete from camp_review
+		where num=#{num}
+	</delete>
+
+
+	<select id="myreviewSelectList" parameterType="String"
+		resultType="com.human.VO.ReviewVO">
+		select r.*, c.c_name
+		from camp_review r full outer join campsite c
+		on r.c_num = c.num
+		where
+		r.m_id = #{id}
+		order by r.num asc
+	</select>
+
+	<select id="reviewSelectList" parameterType="int"
+		resultType="com.human.VO.ReviewVO">
+		select r.*, m.nick_name, m.grade from camp_review r full
+		outer join member m
+		on r.m_id = m.id
+		where c_num = #{num} 
+		order by r.num asc
+	</select>
+
+	<insert id="reviewInsert" parameterType="com.human.VO.ReviewVO">
+		insert into camp_review
+		values(#{num},#{c_num},#{m_id},#{rv_con},#{star_r},default)
+	</insert>
+
+
+	<select id="reviewInsertReturn" parameterType="int"
+		resultType="com.human.VO.ReviewVO">
+		select r.*,m.nick_name, m.grade from camp_review r
+		full outer join member m
+		on r.m_id = m.id
+		where r.num=#{num}
+	</select>
+
+	<select id="reviewSelectSeq" resultType="int">
+		select
+		review_seq.nextval
+		from dual
+	</select>
+</mapper>
